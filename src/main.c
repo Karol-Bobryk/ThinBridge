@@ -30,9 +30,9 @@ int main(int argc, char **argv) {
   size_t city_b_cars_count = rand() % globals.number_of_cars;
   city_a_cars_count -= city_b_cars_count;
 
-  pthread_t *city_a_cars = malloc(sizeof(pthread_t) * city_a_cars_count);
+  pthread_t *city_a_cars = malloc(city_a_cars_count * sizeof(pthread_t));
 
-  pthread_t *city_b_cars = malloc(sizeof(pthread_t) * city_b_cars_count);
+  pthread_t *city_b_cars = malloc(city_b_cars_count * sizeof(pthread_t));
 
   if (create_thread_list(&city_a_cars, city_a_cars_count) != 0) {
     perror("Failed to alloc thread list A");
