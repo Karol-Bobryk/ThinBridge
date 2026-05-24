@@ -121,6 +121,9 @@ int main(int argc, char **argv) {
 
   car_print_state(NULL);
 
+  free(city_a_cars);
+  free(city_b_cars);
+
   pthread_mutex_destroy(&bridge_access); // TODO: add checking
   free_thread_list(city_a_car_threads, globals.city_a_cars_count);
   free_thread_list(city_b_car_threads, globals.city_b_cars_count);
