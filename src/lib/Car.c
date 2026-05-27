@@ -31,3 +31,16 @@ int car_populate_list(Car *list, size_t list_length, bool is_going_left,
 
   return 0;
 }
+
+void car_turn_around(Car *car) {
+
+  if (car->is_going_left) {
+    globals.city_a_cars_left++;
+    globals.city_a_arrived_cars_count--;
+  } else {
+    globals.city_b_cars_left++;
+    globals.city_b_arrived_cars_count--;
+  }
+
+  car->is_going_left = !car->is_going_left;
+}
