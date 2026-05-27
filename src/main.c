@@ -24,12 +24,20 @@
 Globals globals = globals_init;
 
 pthread_mutex_t bridge_access;
+pthread_cond_t bridge_cond;
+bool bridge_busy;
 
 void *routine(void *arg) {
   if (pthread_mutex_lock(&bridge_access) != 0) {
     perror("error getting mutex access");
     return NULL;
   }
+
+  while (bridge_busy) {
+    pthread_cond_wait(&bridge_cond, &bridge_access);
+  }
+
+  bridge_busy = true;
 
   Car *car = ((Car *)arg);
 
@@ -43,7 +51,21 @@ void *routine(void *arg) {
     globals.city_a_cars_left--;
   }
 
+  if (pthread_mutex_unlock(&bridge_access) != 0) {
+    perror("error freeing mutex access");
+    return NULL;
+  }
+
   sleep(1);
+
+  if (pthread_mutex_lock(&bridge_access) != 0) {
+    perror("error getting mutex access");
+    return NULL;
+  }
+
+  bridge_busy = false;
+
+  pthread_cond_signal(&bridge_cond);
 
   if (pthread_mutex_unlock(&bridge_access) != 0) {
     perror("error freeing mutex access");
@@ -57,6 +79,10 @@ int main(int argc, char **argv) {
 
   if (pthread_mutex_init(&bridge_access, NULL) != 0) {
     perror("error initializing mutex");
+    return EXIT_FAILURE;
+  }
+  if (pthread_cond_init(&bridge_cond, NULL) != 0) {
+    perror("error initializing conditional variable");
     return EXIT_FAILURE;
   }
 
@@ -125,6 +151,7 @@ int main(int argc, char **argv) {
   free(city_b_cars);
 
   pthread_mutex_destroy(&bridge_access); // TODO: add checking
+  pthread_cond_destroy(&bridge_cond);    // do we need to do anything here?
   free_thread_list(city_a_car_threads, globals.city_a_cars_count);
   free_thread_list(city_b_car_threads, globals.city_b_cars_count);
 
